@@ -25,5 +25,5 @@ Pour faire tourner ce projet, tu as besoin de :
 
 ### 1. Cloner le dépôt
 ```bash
-git clone [https://github.com/TON_PSEUDO/Watch-Similarity-Project.git](https://github.com/TON_PSEUDO/Watch-Similarity-Project.git)
+git clone [https://github.com/Nassilya/Watch-Similarity-Project.git](https://github.com/Nassilya/Watch-Similarity-Project.git)
 cd Watch-Similarity-Project
