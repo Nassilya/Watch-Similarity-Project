@@ -1,0 +1,20 @@
+# Scala / sbt
+target/
+project/target/
+project/project/
+.metals/
+.bloop/
+.settings/
+
+# Python
+venv/
+__pycache__/
+.ipynb_checkpoints/
+
+# Données
+data/
+watches_data/
+*.parquet/
+
+# Système
+.DS_Store
