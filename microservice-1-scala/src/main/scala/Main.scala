@@ -7,10 +7,18 @@ object Main extends App {
     case Success(watches) =>
       Parsing.displaySummary(watches)
 
-      println("\nProcessing first image...")
-      ImageProcessing.process(watches.head.imagePath) match {
-        case Some(_) => println(s"Image processed: ${watches.head.imagePath}")
-        case None    => println(s"Image not found: ${watches.head.imagePath}")
+      if (watches.nonEmpty) {
+        println("\nProcessing all images...")
+        
+        // On boucle sur toutes les montres
+        watches.foreach { watch =>
+          // On passe l'objet 'watch' entier, pas juste le chemin !
+          ImageProcessing.process(watch)
+        }
+        
+        println("\nAll images processed and saved to ../data/preprocessed/")
+      } else {
+        println("No watches found in the CSV.")
       }
 
     case Failure(e) => println(s"Error: ${e.getMessage}")
