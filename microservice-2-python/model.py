@@ -3,6 +3,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras.applications.mobilenet_v2 import MobileNetV2, preprocess_input
 from tensorflow.keras.preprocessing import image
+from sklearn.metrics.pairwise import cosine_similarity
 import os
 
 # 1. Charger le modèle MobileNetV2 sans la partie "classification"
@@ -47,4 +48,38 @@ np.save("../data/embeddings/embeddings_cnn.npy", np.array(embeddings))
 df_ids = pd.DataFrame({'id': ids})
 df_ids.to_csv("../data/embeddings/ids_map.csv", index=False)
 
-print("✅ Terminé ! Matrice d'embeddings (Vecteurs) créée.")
+print("Terminé ! Matrice d'embeddings (Vecteurs) créée.")
+print("🔍 Calcul de la matrice de similarité...")
+
+# 1. On utilise les embeddings qu'on vient de créer
+embeddings_matrix = np.array(embeddings)
+
+# 2. Calcul de la Similarité Cosinus (donne un score entre 0 et 1)
+# On compare chaque montre avec TOUTES les autres
+similarity_matrix = cosine_similarity(embeddings_matrix)
+
+# 3. Pour chaque montre, on cherche les 5 meilleures
+top_n = 5
+recommendations = []
+
+for i in range(len(df)):
+    # On récupère les scores de la montre i, on les trie par ordre décroissant
+    # [1:] car le premier résultat est toujours la montre elle-même (100% identique)
+    similar_indices = similarity_matrix[i].argsort()[-(top_n+1):-1][::-1]
+    
+    # On récupère les vrais IDs de ces montres
+    similar_ids = [ids[idx] for idx in similar_indices]
+    recommendations.append(similar_ids)
+
+# 4. On ajoute cette colonne à notre DataFrame d'origine
+df['similar_ids'] = recommendations
+
+# 5. SAUVEGARDE FINALE (Le fameux OUTPUT du schéma)
+output_dir = "../data/output"
+if not os.path.exists(output_dir):
+    os.makedirs(output_dir)
+
+output_path = os.path.join(output_dir, "final_results.parquet")
+df.to_parquet(output_path, index=False)
+
+print(f"Fichier OUTPUT créé avec succès : {output_path}")
