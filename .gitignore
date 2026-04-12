@@ -1,20 +1,26 @@
-# Scala / sbt
 target/
-project/target/
-project/project/
+.bsp/
 .metals/
-.bloop/
-.settings/
+.idea/
+*.class
+*.jar
 
-# Python
-venv/
 __pycache__/
-.ipynb_checkpoints/
+*.pyc
+*.pth
+*.pkl
+venv/
+.env
 
-# Données
-data/
-watches_data/
-*.parquet/
+data/watches/images/
+data/watches/metadata.csv
 
-# Système
+preprocessed/
+embeddings/
+output/
+*.npy
+*.parquet
+
+.vscode/
+
 .DS_Store

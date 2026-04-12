@@ -7,7 +7,7 @@ case class Watch(id: String, brand: String, name: String, price: String, imagePa
 object Parsing {
 
   private val imagesDir = "../data/watches/images/"
-  private val outputCsvPath = "../data/parsing/processed_watches.csv"
+  private val outputCsvPath = "../preprocessed/processed_watches.csv"
 
   def loadFromCsv(filePath: String): Try[List[Watch]] = Try {
     val source = Source.fromFile(filePath)
@@ -24,12 +24,10 @@ object Parsing {
       }
     } finally source.close()
 
-    // --- ÉTAPE DE STOCKAGE AUTOMATIQUE ---
     saveToCsv(watches, outputCsvPath) match {
       case Success(_) => println(s"Sauvegarde auto réussie dans : $outputCsvPath")
       case Failure(e) => println(s"Échec de la sauvegarde auto : ${e.getMessage}")
     }
-    // -------------------------------------
 
     watches
   }
