@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Watch Finder</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #080b12;
+      color: #f0f0f0;
+      min-height: 100vh;
+    }
+
+    header {
+      padding: 72px 24px 0;
+      text-align: center;
+    }
+
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .logo-icon {
+      width: 72px; height: 72px;
+      background: linear-gradient(135deg, #6366f1, #a78bfa);
+      border-radius: 20px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2.2rem;
+    }
+
+    .logo-text {
+      font-size: 3rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #e0e0ff, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -1px;
+    }
+
+    .subtitle {
+      color: #666;
+      font-size: 1.15rem;
+      font-weight: 400;
+      margin-bottom: 56px;
+    }
+
+    /* ── MAIN CONTENT ── */
+    main {
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+    }
+
+    /* ── UPLOAD ── */
+    .upload-area {
+      border: 2px dashed #2a2a3e;
+      border-radius: 24px;
+      padding: 70px 40px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.25s;
+      max-width: 580px;
+      margin: 0 auto 40px;
+      background: #0d1020;
+    }
+
+    .upload-area:hover, .upload-area.dragover {
+      border-color: #6366f1;
+      background: #111428;
+      box-shadow: 0 0 40px rgba(99,102,241,0.12);
+    }
+
+    .upload-icon-wrap {
+      width: 72px; height: 72px;
+      background: linear-gradient(135deg, #1e1e3a, #2a2a4e);
+      border-radius: 20px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2rem;
+      margin: 0 auto 20px;
+    }
+
+    .upload-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #ddd;
+    }
+
+    .upload-hint { color: #555; font-size: 0.88rem; }
+
+    #file-input { display: none; }
+
+    /* ── PREVIEW ── */
+    .preview-section {
+      display: none;
+      max-width: 580px;
+      margin: 0 auto 40px;
+    }
+
+    .preview-card {
+      background: #0d1020;
+      border: 1px solid #1e1e3a;
+      border-radius: 24px;
+      padding: 28px;
+      text-align: center;
+    }
+
+    .preview-card img {
+      max-height: 320px;
+      max-width: 100%;
+      border-radius: 16px;
+      object-fit: contain;
+      margin-bottom: 24px;
+      border: 1px solid #1e1e3a;
+    }
+
+    .preview-label {
+      font-size: 0.8rem;
+      color: #555;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 20px;
+    }
+
+    .btn-row { display: flex; gap: 12px; justify-content: center; }
+
+    .btn {
+      padding: 14px 36px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: 0.3px;
+    }
+
+    .btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(99,102,241,0.35); }
+    .btn:disabled { background: #1e1e3a; color: #444; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    .btn-ghost {
+      padding: 14px 24px;
+      background: transparent;
+      color: #666;
+      border: 1px solid #2a2a3e;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-ghost:hover { color: #ddd; border-color: #555; }
+
+    /* ── SPINNER ── */
+    .spinner-wrap {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      padding: 40px;
+    }
+
+    .spinner {
+      width: 44px; height: 44px;
+      border: 3px solid #1e1e3a;
+      border-top-color: #6366f1;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    .spinner-text { color: #555; font-size: 0.9rem; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── ERROR ── */
+    .error-msg {
+      display: none;
+      text-align: center;
+      color: #f87171;
+      background: rgba(248,113,113,0.08);
+      border: 1px solid rgba(248,113,113,0.2);
+      border-radius: 12px;
+      padding: 16px 24px;
+      max-width: 580px;
+      margin: 0 auto 24px;
+      font-size: 0.9rem;
+    }
+
+    /* ── RESULTS ── */
+    .results-section { display: none; }
+
+    .results-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .results-header h2 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #e0e0ff;
+    }
+
+    .results-badge {
+      background: #1e1e3a;
+      color: #a78bfa;
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 20px;
+      letter-spacing: 0.5px;
+    }
+
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 20px;
+    }
+
+    @media (max-width: 1100px) { .results-grid { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 680px)  { .results-grid { grid-template-columns: repeat(2, 1fr); } }
+
+    .result-card {
+      background: #0d1020;
+      border: 1px solid #1a1a30;
+      border-radius: 20px;
+      overflow: hidden;
+      transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+      cursor: default;
+    }
+
+    .result-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+      border-color: #6366f1;
+    }
+
+    .card-rank {
+      position: absolute;
+      top: 12px; left: 12px;
+      background: rgba(0,0,0,0.65);
+      backdrop-filter: blur(4px);
+      color: #a78bfa;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 20px;
+      letter-spacing: 0.5px;
+    }
+
+    .card-img-wrap {
+      position: relative;
+      background: #111428;
+      aspect-ratio: 1;
+      overflow: hidden;
+    }
+
+    .card-img-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.35s;
+    }
+
+    .result-card:hover .card-img-wrap img { transform: scale(1.05); }
+
+    .card-body { padding: 18px; }
+
+    .watch-name {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #e8e8ff;
+      line-height: 1.4;
+      margin-bottom: 6px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      min-height: 2.5em;
+    }
+
+    .watch-brand {
+      font-size: 0.78rem;
+      color: #6366f1;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 6px;
+    }
+
+    .watch-price {
+      font-size: 0.88rem;
+      color: #aaa;
+      font-weight: 500;
+      margin-bottom: 14px;
+    }
+
+    .confidence-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .confidence-row span:first-child {
+      font-size: 0.72rem;
+      color: #555;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .confidence-pct {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #a78bfa;
+    }
+
+    .confidence-bar {
+      height: 5px;
+      background: #1a1a30;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .confidence-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #6366f1, #a78bfa);
+      border-radius: 4px;
+      transition: width 0.8s cubic-bezier(.22,.68,0,1.2);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">
+      <span class="logo-text">Watch Finder</span>
+    </div>
+    <p class="subtitle">Upload a photo of any watch — we'll find the most visually similar ones</p>
+  </header>
+
+  <main>
+
+    <div class="upload-area" id="upload-area">
+      <div class="upload-icon-wrap">📷</div>
+      <div class="upload-title">Drop your image here</div>
+      <p class="upload-hint">or click to browse — JPG, PNG, WEBP supported</p>
+      <input type="file" id="file-input" accept="image/*" />
+    </div>
+
+    <div class="preview-section" id="preview-section">
+      <div class="preview-card">
+        <p class="preview-label">Your image</p>
+        <img id="preview-img" src="" alt="Your watch" />
+        <div class="btn-row">
+          <button class="btn" id="search-btn">Find Similar Watches</button>
+          <button class="btn-ghost" id="change-btn">Change image</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="spinner-wrap" id="spinner-wrap">
+      <div class="spinner"></div>
+      <p class="spinner-text">Analyzing your image with MobileNetV2...</p>
+    </div>
+
+    <div class="error-msg" id="error-msg"></div>
+
+    <div class="results-section" id="results-section">
+      <div class="results-header">
+        <h2>Similar Watches</h2>
+        <span class="results-badge">TOP 5</span>
+      </div>
+      <div class="results-grid" id="results-grid"></div>
+    </div>
+
+  </main>
+
+  <script>
+    const uploadArea    = document.getElementById('upload-area');
+    const fileInput     = document.getElementById('file-input');
+    const previewSection= document.getElementById('preview-section');
+    const previewImg    = document.getElementById('preview-img');
+    const searchBtn     = document.getElementById('search-btn');
+    const changeBtn     = document.getElementById('change-btn');
+    const spinnerWrap   = document.getElementById('spinner-wrap');
+    const errorMsg      = document.getElementById('error-msg');
+    const resultsSection= document.getElementById('results-section');
+    const resultsGrid   = document.getElementById('results-grid');
+
+    let selectedFile = null;
+
+    uploadArea.addEventListener('click', () => fileInput.click());
+    uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('dragover'); });
+    uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
+    uploadArea.addEventListener('drop', e => {
+      e.preventDefault();
+      uploadArea.classList.remove('dragover');
+      if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+    });
+    fileInput.addEventListener('change', () => { if (fileInput.files[0]) handleFile(fileInput.files[0]); });
+
+    changeBtn.addEventListener('click', () => {
+      selectedFile = null;
+      previewSection.style.display = 'none';
+      uploadArea.style.display = 'block';
+      resultsSection.style.display = 'none';
+      errorMsg.style.display = 'none';
+      fileInput.value = '';
+    });
+
+    function handleFile(file) {
+      selectedFile = file;
+      const reader = new FileReader();
+      reader.onload = e => {
+        previewImg.src = e.target.result;
+        uploadArea.style.display = 'none';
+        previewSection.style.display = 'block';
+        resultsSection.style.display = 'none';
+        errorMsg.style.display = 'none';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    searchBtn.addEventListener('click', async () => {
+      if (!selectedFile) return;
+      searchBtn.disabled = true;
+      spinnerWrap.style.display = 'flex';
+      resultsSection.style.display = 'none';
+      errorMsg.style.display = 'none';
+
+      const formData = new FormData();
+      formData.append('image', selectedFile);
+
+      try {
+        const res = await fetch('/find-similar', { method: 'POST', body: formData });
+        const data = await res.json();
+        if (data.error) {
+          errorMsg.textContent = data.error;
+          errorMsg.style.display = 'block';
+        } else {
+          renderResults(data.results);
+        }
+      } catch {
+        errorMsg.textContent = 'Server error. Make sure the backend is running.';
+        errorMsg.style.display = 'block';
+      } finally {
+        spinnerWrap.style.display = 'none';
+        searchBtn.disabled = false;
+      }
+    });
+
+    function renderResults(results) {
+      resultsGrid.innerHTML = '';
+      const labels = ['#1', '#2', '#3', '#4', '#5'];
+      results.forEach((w, i) => {
+        const card = document.createElement('div');
+        card.className = 'result-card';
+        card.innerHTML = `
+          <div class="card-img-wrap">
+            <img src="/watch-image/${w.id}" alt="${w.name}" onerror="this.style.opacity='0'" />
+            <div class="card-rank">${labels[i]}</div>
+          </div>
+          <div class="card-body">
+            <div class="watch-brand">${w.brand}</div>
+            <div class="watch-name">${w.name}</div>
+            <div class="watch-price">${w.price}</div>
+            <div class="confidence-row">
+              <span>Match</span>
+              <span class="confidence-pct">${w.score}%</span>
+            </div>
+            <div class="confidence-bar">
+              <div class="confidence-fill" style="width: 0%"></div>
+            </div>
+          </div>
+        `;
+        resultsGrid.appendChild(card);
+        setTimeout(() => {
+          card.querySelector('.confidence-fill').style.width = w.score + '%';
+        }, 100 + i * 80);
+      });
+      resultsSection.style.display = 'block';
+    }
+  </script>
+</body>
+</html>
