@@ -1,8 +1,8 @@
 # Watch Similarity Project
 
 ## Introduction
-Projet de classification et similarité de montres réalisé dans le cadre du Master 1 Big Data & IA.
-L'objectif est de trouver des montres visuellement similaires à partir d'une image donnée, en combinant un microservice Scala pour le traitement des données, un microservice Python minimal pour l'extraction de features CNN, et deux interfaces utilisateur.
+Projet de recherche d'images par le contenu (CBIR — Content-Based Image Retrieval) appliqué aux montres, réalisé dans le cadre du Master 1 Big Data & IA.
+L'objectif est de trouver des montres visuellement similaires à partir d'une image donnée, en combinant deux microservices Scala/Spark, un script Python CNN, et deux interfaces utilisateur.
 
 ## Architecture du projet
 
@@ -14,17 +14,23 @@ Watches Similarity Project/
 │       ├── images/
 │       └── metadata.csv
 │
-├── microservice-1-scala/             # Microservice Scala
+├── microservice-1-scala/             # MS1 — Spark Scala
 │   ├── project/
 │   │   └── build.properties
 │   ├── src/main/scala/
 │   │   ├── Main.scala
 │   │   ├── Parsing.scala
-│   │   ├── ImageProcessing.scala
+│   │   └── ImageProcessing.scala
+│   └── build.sbt
+│
+├── microservice-2-scala/             # MS2 — Spark Scala
+│   ├── project/
+│   │   └── build.properties
+│   ├── src/main/scala/
 │   │   └── Scoring.scala
 │   └── build.sbt
 │
-├── microservice-2-python/            # Microservice Python
+├── python/                           # CNN Feature Extraction
 │   └── model.py
 │
 ├── frontend/                         # Interface Streamlit
@@ -34,8 +40,8 @@ Watches Similarity Project/
 │   ├── app.py
 │   └── index.html
 │
-├── preprocessed/                     # Généré — images redimensionnées + CSV
-├── embeddings/                       # Généré — vecteurs CNN
+├── preprocessed/                     # Généré — Parquet + images redimensionnées
+├── embeddings/                       # Généré — vecteurs CNN (CSV)
 ├── output/                           # Généré — résultats finaux CSV
 │
 ├── run.bat                           # Script de lancement global
@@ -47,13 +53,14 @@ Watches Similarity Project/
 
 | Composant | Technologie |
 |---|---|
-| Parsing & traitement images | Scala 2.13 |
-| Calcul de similarité (parallèle) | Scala 2.13 + Parallel Collections |
+| Parsing & traitement images | Scala 2.13 + Apache Spark 3.3 (DataFrame + RDD) |
+| Calcul de similarité (distribué) | Scala 2.13 + Apache Spark 3.3 (RDD + broadcast) |
 | Extraction features CNN | Python + TensorFlow (MobileNetV2) |
 | Interface Streamlit | Python + Streamlit |
 | Interface Web | Python + Flask + HTML/CSS/JS |
 | Modèle CNN | MobileNetV2 (pré-entraîné ImageNet) |
 | Métrique de similarité | Similarité Cosinus |
+| Format intermédiaire | Apache Parquet |
 
 ## Dataset
 Télécharger le dataset depuis Kaggle :
@@ -71,7 +78,7 @@ Placer les fichiers dans `data/watches/` :
 
 **Python:**
 ```bash
-pip install tensorflow pandas numpy streamlit flask pillow
+pip install tensorflow pandas numpy streamlit flask pillow pyarrow
 ```
 
 ## Lancer le projet
@@ -81,22 +88,22 @@ pip install tensorflow pandas numpy streamlit flask pillow
 run.bat
 ```
 Ce script exécute automatiquement dans l'ordre :
-1. **Scala MS1** — Parsing du CSV + redimensionnement des images
-2. **Python** — Extraction des features CNN (MobileNetV2)
-3. **Scala Scoring** — Calcul de la similarité cosinus (parallèle) + génération du CSV
+1. **MS1 (Spark Scala)** — Parsing CSV (DataFrame) + redimensionnement images (RDD) 
+2. **Python** — Extraction features CNN (MobileNetV2) depuis le Parquet
+3. **MS2 (Spark Scala)** — Calcul similarité cosinus (RDD + broadcast) 
 4. **Streamlit** — Lancement de l'interface Streamlit
 
 ### Ou étape par étape
 
 ```bash
-# Étape 1 - Parsing + traitement images
+# Étape 1 - MS1 : Parsing + traitement images
 cd microservice-1-scala && sbt run
 
 # Étape 2 - Extraction features CNN
-cd microservice-2-python && python model.py
+cd python && python model.py
 
-# Étape 3 - Scoring
-cd microservice-1-scala && sbt "runMain Scoring"
+# Étape 3 - MS2 : Scoring
+cd microservice-2-scala && sbt run
 
 # Étape 4a - Interface Streamlit
 cd frontend && streamlit run streamlit_app.py
@@ -105,9 +112,3 @@ cd frontend && streamlit run streamlit_app.py
 cd frontend-web && python app.py
 ```
 
-### Interface Web (upload libre)
-Après avoir exécuté les étapes 1 à 3 :
-```bash
-cd frontend-web && python app.py
-```
-Ouvrir **http://localhost:5000** — permet d'uploader n'importe quelle photo de montre et d'obtenir les 5 montres les plus similaires du dataset.
