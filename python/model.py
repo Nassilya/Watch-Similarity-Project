@@ -19,7 +19,7 @@ def extract_cnn_features(img_path):
         print(f"Error on {img_path}: {e}")
         return None
 
-df = pd.read_csv("../preprocessed/metadata_preprocessed.csv")
+df = pd.read_parquet("../preprocessed/watches.parquet")
 
 print(f"Extracting CNN features for {len(df)} watches...")
 
@@ -39,4 +39,4 @@ embeddings_df = pd.DataFrame(embeddings_array, columns=[f"f{i}" for i in range(e
 embeddings_df.insert(0, 'id', ids)
 embeddings_df.to_csv("../embeddings/embeddings.csv", index=False)
 
-print(f"Done! Embeddings saved for {len(ids)} watches → ../embeddings/embeddings.csv")
+print(f"Done! Embeddings saved for {len(ids)} watches to ../embeddings/embeddings.csv")

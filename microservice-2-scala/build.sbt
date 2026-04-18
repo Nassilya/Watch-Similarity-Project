@@ -1,4 +1,4 @@
-name := "watches-similarity-ms1"
+name := "watches-similarity-ms2"
 version := "1.0"
 scalaVersion := "2.13.12"
 
